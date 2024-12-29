@@ -4,9 +4,11 @@ const LocalStrategy = require("passport-local").Strategy;
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const bcrypt = require("bcryptjs");
+
 // Define local strategy
 passport.use(
-  new LocalStrategy(async (username, password, done) => {
+  new LocalStrategy({ session: false }, async (username, password, done) => {
     // Search db for user
     try {
       const user = await prisma.user.findUnique({
@@ -18,7 +20,8 @@ passport.use(
         return done(null, false, { msg: "Username not found" });
       }
 
-      if (user.password !== password) {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
         return done(null, false, { msg: "Incorrect password" });
       }
 
