@@ -18,7 +18,7 @@ model User {
   username String    @unique
   password String
   name     String
-  role     Role
+  role     Role      @default(USER)
   posts    Post[]
   Comment  Comment[]
 }
