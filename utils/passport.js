@@ -1,5 +1,8 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const passportJWT = require("passport-jwt");
+const JWTStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -30,6 +33,29 @@ passport.use(
       return done(err);
     }
   })
+);
+
+// define JWT strategy
+passport.use(
+  new JWTStrategy(
+    {
+      // Check for token in header
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.ACCESS_TOKEN_SECRET,
+    },
+    async function (jwtPayload, next) {
+      try {
+        // retrieve user from db
+        const user = await prisma.user.findUnique({
+          where: { id: jwtPayload.id },
+        });
+
+        return next(null, user);
+      } catch (err) {
+        return next(err);
+      }
+    }
+  )
 );
 
 module.exports = passport;
