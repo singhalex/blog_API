@@ -59,7 +59,7 @@ exports.signup_post = [
     bcrypt.hash(password, 10, async (err, hashedPassword) => {
       if (err) return next(err);
 
-      // Save suer to db
+      // Save user to db
       try {
         const user = await prisma.user.create({
           data: { username, password: hashedPassword, name },
