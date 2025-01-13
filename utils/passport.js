@@ -43,16 +43,19 @@ passport.use(
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.ACCESS_TOKEN_SECRET,
     },
-    async function (jwtPayload, next) {
+    async function (jwtPayload, done) {
       try {
         // retrieve user from db
         const user = await prisma.user.findUnique({
           where: { id: jwtPayload.id },
         });
-
-        return next(null, user);
+        if (user) {
+          return done(null, user);
+        } else {
+          return done(null, false);
+        }
       } catch (err) {
-        return next(err);
+        return done(err);
       }
     }
   )
