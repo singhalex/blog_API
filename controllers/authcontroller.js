@@ -33,12 +33,15 @@ exports.signup_post = [
     .withMessage("Username cannot be empty"),
   // Check if user already exists
   body("username").custom(async (value) => {
-    const user = await prisma.user.findUnique({
-      where: { username: value },
-    });
-
-    if (user) {
-      throw new Error("Username already exists");
+    try {
+      const user = await prisma.user.findUnique({
+        where: { username: value },
+      });
+      if (user) {
+        throw new Error("Username already exists");
+      }
+    } catch {
+      throw new Error("Database error. Try again");
     }
   }),
   body("password")
