@@ -20,7 +20,7 @@ model User {
   name     String
   role     Role      @default(USER)
   posts    Post[]
-  Comment  Comment[]
+  comments Comment[]
 }
 
 model Post {
@@ -32,7 +32,7 @@ model Post {
   published Boolean
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
-  Comment   Comment[]
+  comments  Comment[]
 }
 
 model Comment {
