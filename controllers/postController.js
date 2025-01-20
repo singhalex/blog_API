@@ -193,5 +193,3 @@ exports.delete_post_post = [
     }
   },
 ];
-
-exports.post_post;
