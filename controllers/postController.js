@@ -77,7 +77,7 @@ exports.create_post_post = [
     const { errors } = validationResult(req);
 
     if (errors.length > 0) {
-      return res.json({ msg: errors.map((error) => error.msg) });
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
     }
 
     // Only authors can post
