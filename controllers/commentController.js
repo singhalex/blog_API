@@ -16,8 +16,27 @@ exports.comments_get = async (req, res, next) => {
   }
 };
 
-exports.single_comment_get = (req, res, next) => {
-  res.send("SINGLE COMMENT");
+// Get single comment
+exports.single_comment_get = async (req, res, next) => {
+  const { commentId } = req.params;
+
+  if (containtsNonNumber(commentId)) {
+    return res.status(400).json({ msg: "Invalid comment ID" });
+  }
+
+  try {
+    const comment = await prisma.comment.findUnique({
+      where: { id: parseInt(commentId) },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ msg: "Comment not found" });
+    }
+
+    return res.json(comment);
+  } catch (err) {
+    next(err);
+  }
 };
 
 // Create comment
