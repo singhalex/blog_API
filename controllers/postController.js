@@ -42,8 +42,8 @@ exports.single_post_get = async (req, res, next) => {
         id: parseInt(postId),
       },
       include: {
-        author: { omit: { password: true } },
-        comments: true,
+        author: { select: { name: true } },
+        comments: { include: { author: { select: { name: true } } } },
       },
     });
     if (post) {
