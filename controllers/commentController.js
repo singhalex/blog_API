@@ -125,6 +125,50 @@ exports.delete_comment_post = [
   },
 ];
 
-exports.edit_comment_post = (req, res, next) => {
-  res.send("COMMENT UPDATED");
-};
+exports.edit_comment_post = [
+  // Authenticate user
+  passport.authenticate("jwt", { session: false }),
+  // Validate and sanitize user submission
+  body("content")
+    .trim()
+    .escape()
+    .isLength({ min: 1, max: 400 })
+    .withMessage(""),
+  async (req, res, next) => {
+    const { commentId } = req.params;
+    const { errors } = validationResult(req);
+
+    if (errors.length > 0) {
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
+    }
+
+    if (containtsNonNumber(commentId)) {
+      return res.status(400).json({ msg: "Invalid comment Id" });
+    }
+
+    try {
+      const comment = await prisma.comment.findUnique({
+        where: { id: parseInt(commentId) },
+      });
+
+      if (!comment) {
+        return res.status(404).json({ msg: "Comment not found" });
+      }
+
+      if (comment.authorId !== req.user.id) {
+        return res
+          .status(401)
+          .json({ msg: "Cannot edit other user's comments" });
+      }
+
+      const updatedComment = await prisma.comment.update({
+        where: { id: comment.id },
+        data: { content: req.body.content },
+      });
+
+      return res.json(updatedComment);
+    } catch (err) {
+      next(err);
+    }
+  },
+];
