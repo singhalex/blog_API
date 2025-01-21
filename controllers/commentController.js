@@ -27,6 +27,7 @@ exports.single_comment_get = async (req, res, next) => {
   try {
     const comment = await prisma.comment.findUnique({
       where: { id: parseInt(commentId) },
+      include: { author: { select: { name: true } } },
     });
 
     if (!comment) {
