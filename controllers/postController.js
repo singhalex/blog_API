@@ -4,7 +4,7 @@ const passport = require("../utils/passport");
 const { body, validationResult } = require("express-validator");
 const containsNonNumber = require("../utils/containsNonNumber");
 
-// Send all published posts
+// Get all published posts
 exports.posts_get = async (req, res, next) => {
   try {
     const posts = await prisma.post.findMany({
@@ -25,7 +25,7 @@ exports.posts_get = async (req, res, next) => {
   }
 };
 
-// Get single post with author and comment details
+// Get single post with author and comment count
 exports.single_post_get = async (req, res, next) => {
   const { postId } = req.params;
 
@@ -97,6 +97,7 @@ exports.create_post_post = [
   },
 ];
 
+// Update existing post
 exports.update_post_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -153,6 +154,7 @@ exports.update_post_post = [
   },
 ];
 
+// Delete post
 exports.delete_post_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -185,6 +187,85 @@ exports.delete_post_post = [
           .status(401)
           .json({ msg: "Can't delete other author's post" });
       }
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
+// Get all comments attached to post
+exports.comments_on_post_get = async (req, res, next) => {
+  const { postId } = req.params;
+
+  if (containsNonNumber(postId)) {
+    return res.status(400).json({ msg: "Invalid post ID" });
+  }
+
+  try {
+    // Check if post exists
+    const post = await prisma.post.findUnique({
+      where: { id: parseInt(postId) },
+      select: { id: true },
+    });
+
+    if (!post) {
+      return res.status(404).json({ msg: "Post not found" });
+    }
+
+    const comments = await prisma.comment.findMany({
+      where: { postId: post.id },
+    });
+
+    return res.json(comments);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Comment on post
+exports.create_comment_on_post = [
+  // Authenticate user
+  passport.authenticate("jwt", { session: false }),
+  // Validate and sanitize user submission
+  body("content")
+    .trim()
+    .escape()
+    .isLength({ min: 1, max: 400 })
+    .withMessage(""),
+
+  async (req, res, next) => {
+    const { postId } = req.params;
+    const { errors } = validationResult(req);
+
+    if (errors.length > 0) {
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
+    }
+
+    if (containsNonNumber(postId)) {
+      return res.status(400).json({ msg: "Invalid post ID" });
+    }
+
+    try {
+      // Check if post exists
+      const post = await prisma.post.findUnique({
+        where: { id: parseInt(postId) },
+        select: { id: true },
+      });
+
+      if (!post) {
+        return res.status(404).json({ msg: "Post not found" });
+      }
+
+      // Save post to db
+      const comment = await prisma.comment.create({
+        data: {
+          authorId: req.user.id,
+          postId: parseInt(postId),
+          content: req.body.content,
+        },
+      });
+
+      return res.status(201).json(comment);
     } catch (err) {
       next(err);
     }

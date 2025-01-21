@@ -12,12 +12,8 @@ router.put("/:postId", postController.update_post_post);
 
 router.delete("/:postId", postController.delete_post_post);
 
-router.get("/:postId/comments", (req, res, next) => {
-  res.send("THESE ARE THE COMMENTS FOR A POST");
-});
+router.get("/:postId/comments", postController.comments_on_post_get);
 
-router.post("/:postId/comments", (req, res) => {
-  res.send("ADD A COMMENT TO A POST");
-});
+router.post("/:postId/comments", postController.create_comment_on_post);
 
 module.exports = router;
