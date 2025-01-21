@@ -7,7 +7,9 @@ const containtsNonNumber = require("../utils/containsNonNumber");
 // Get all comments
 exports.comments_get = async (req, res, next) => {
   try {
-    const comments = await prisma.comment.findMany();
+    const comments = await prisma.comment.findMany({
+      include: { author: { select: { name: true } } },
+    });
     return res.json(comments);
   } catch (err) {
     next(err);
@@ -71,7 +73,7 @@ exports.delete_comment_post = [
     const { commentId } = req.params;
 
     if (containtsNonNumber(commentId)) {
-      return res.status(404).json({ msg: "Invalid comment ID" });
+      return res.status(400).json({ msg: "Invalid comment ID" });
     }
 
     try {
