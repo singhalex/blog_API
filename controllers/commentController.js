@@ -86,6 +86,7 @@ exports.create_comment_post = [
   },
 ];
 
+// Delete comment
 exports.delete_comment_post = [
   passport.authenticate("jwt", { session: false }),
   async (req, res, next) => {
