@@ -68,7 +68,6 @@ exports.create_comment_post = [
 
 exports.delete_comment_post = [
   passport.authenticate("jwt", { session: false }),
-
   async (req, res, next) => {
     const { commentId } = req.params;
 
@@ -77,6 +76,7 @@ exports.delete_comment_post = [
     }
 
     try {
+      // Check if comment exists
       const comment = await prisma.comment.findUnique({
         where: { id: parseInt(commentId) },
       });
@@ -85,12 +85,14 @@ exports.delete_comment_post = [
         return res.status(404).json({ msg: "Comment not found" });
       }
 
+      // Only author of comment can delete
       if (comment.authorId !== req.user.id) {
         return res
           .status(401)
           .json({ msg: "Can't delete other user's comments" });
       }
 
+      // Delete from db
       const deletedComment = await prisma.comment.delete({
         where: { id: comment.id },
       });
