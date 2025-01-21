@@ -2,10 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const passport = require("../utils/passport");
 const { body, validationResult } = require("express-validator");
-
-const containsNonNumber = (string) => {
-  return /[^0-9]/.test(string);
-};
+const containsNonNumber = require("../utils/containsNonNumber");
 
 // Send all published posts
 exports.posts_get = async (req, res, next) => {
@@ -28,7 +25,7 @@ exports.posts_get = async (req, res, next) => {
   }
 };
 
-// Send single post with author and comment details
+// Get single post with author and comment details
 exports.single_post_get = async (req, res, next) => {
   const { postId } = req.params;
 
