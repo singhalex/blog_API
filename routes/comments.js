@@ -6,7 +6,7 @@ router.get("/", commentController.comments_get);
 
 router.get("/:commentId", commentController.single_comment_get);
 
-router.post("/create", commentController.create_comment_post);
+router.post("/create/:postId", commentController.create_comment_post);
 
 router.post("/:commentId/delete", commentController.delete_comment_post);
 
