@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const passport = require("passport");
 const prisma = new PrismaClient({ omit: { user: { password: true } } });
 
 const checkAuth = (userId, params, res) => {
@@ -62,6 +63,38 @@ exports.user_get = async (req, res, next) => {
 
   return;
 };
+
+// Delete user
+exports.delete_user = [
+  passport.authenticate("jwt", { session: false }),
+
+  async (req, res, next) => {
+    const { userId } = req.params;
+    if (req.user.role === "AUTHOR" || req.user.id === req.params.userId) {
+      try {
+        // Check if user exists
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          return res.status(404).json({ msg: "User not found" });
+        }
+
+        const deletedUser = await prisma.user.delete({
+          where: { id: userId },
+        });
+
+        return res.json(deletedUser);
+      } catch (err) {
+        next(err);
+      }
+    }
+    return res
+      .status(401)
+      .json({ msg: "You are not authorized to delete this user" });
+  },
+];
 
 // Get all posts of a user
 exports.user_posts_get = async (req, res, next) => {
