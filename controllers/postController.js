@@ -195,7 +195,7 @@ exports.delete_post_post = [
   },
 ];
 
-// GET all comments attached to post
+// GET all comments attached to published post
 exports.comments_on_post_get = async (req, res, next) => {
   const { postId } = req.params;
 
@@ -206,7 +206,7 @@ exports.comments_on_post_get = async (req, res, next) => {
   try {
     // Check if post exists
     const post = await prisma.post.findUnique({
-      where: { id: parseInt(postId) },
+      where: { id: parseInt(postId), published: true },
       select: { id: true },
     });
 
@@ -224,7 +224,7 @@ exports.comments_on_post_get = async (req, res, next) => {
   }
 };
 
-// CREATE comment on post
+// CREATE comment on published post
 exports.create_comment_on_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -250,7 +250,7 @@ exports.create_comment_on_post = [
     try {
       // Check if post exists
       const post = await prisma.post.findUnique({
-        where: { id: parseInt(postId) },
+        where: { id: parseInt(postId), published: true },
         select: { id: true },
       });
 
