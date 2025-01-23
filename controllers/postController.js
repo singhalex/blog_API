@@ -37,12 +37,14 @@ exports.single_post_get = async (req, res, next) => {
     const post = await prisma.post.findUnique({
       where: {
         id: parseInt(postId),
+        published: true,
       },
       include: {
         author: { select: { name: true } },
         comments: { include: { author: { select: { name: true } } } },
       },
     });
+
     if (post) {
       return res.json(post);
     } else {
