@@ -88,7 +88,7 @@ exports.create_post_post = [
             authorId: req.user.id,
           },
         });
-        return res.satus(201).json(post);
+        return res.status(201).json(post);
       } catch (err) {
         next(err);
       }
