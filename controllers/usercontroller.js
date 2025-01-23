@@ -1,6 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const passport = require("passport");
 const prisma = new PrismaClient({ omit: { user: { password: true } } });
+const { body, validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+const createJWT = (user) => {
+  return jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET);
+};
 
 const checkAuth = (userId, params, res) => {
   if (!userId) {
@@ -63,6 +70,59 @@ exports.user_get = async (req, res, next) => {
 
   return;
 };
+
+// Create user
+exports.user_create_post = [
+  // Validate user submission
+  body("username")
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage("Username cannot be empty"),
+  // Check if user already exists
+  body("username").custom(async (value) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { username: value },
+      });
+      if (user) {
+        console.log(user);
+        throw new Error("Username already exists");
+      }
+    } catch (err) {
+      throw err;
+    }
+  }),
+  body("password")
+    .trim()
+    .isLength({ min: 4 })
+    .withMessage("Password mnust be at least 4 characters long"),
+
+  (req, res, next) => {
+    const { username, password, name } = req.body;
+    const { errors } = validationResult(req);
+
+    // Return messages if submission has errors
+    if (errors.length > 0) {
+      return res.json({ msg: errors.map((error) => error.msg) });
+    }
+
+    // Encryp password
+    bcrypt.hash(password, 10, async (err, hashedPassword) => {
+      if (err) return next(err);
+
+      // Save user to db
+      try {
+        const user = await prisma.user.create({
+          data: { username, password: hashedPassword, name },
+        });
+        return res.json(createJWT(user));
+      } catch (err) {
+        next(err);
+      }
+    });
+  },
+];
 
 // Delete user
 exports.delete_user = [
