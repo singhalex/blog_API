@@ -4,7 +4,7 @@ const passport = require("../utils/passport");
 const { body, validationResult } = require("express-validator");
 const containsNonNumber = require("../utils/containsNonNumber");
 
-// Get all published posts
+// GET all published posts
 exports.posts_get = async (req, res, next) => {
   try {
     const posts = await prisma.post.findMany({
@@ -25,7 +25,7 @@ exports.posts_get = async (req, res, next) => {
   }
 };
 
-// Get single post with author and comment count
+// GET single post with author and comment count
 exports.single_post_get = async (req, res, next) => {
   const { postId } = req.params;
 
@@ -53,7 +53,7 @@ exports.single_post_get = async (req, res, next) => {
   }
 };
 
-// Create new post
+// CREATE new post
 exports.create_post_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -97,7 +97,7 @@ exports.create_post_post = [
   },
 ];
 
-// Update existing post
+// UPDATE existing post
 exports.update_post_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -154,7 +154,7 @@ exports.update_post_post = [
   },
 ];
 
-// Delete post
+// DELETE post
 exports.delete_post_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
@@ -193,7 +193,7 @@ exports.delete_post_post = [
   },
 ];
 
-// Get all comments attached to post
+// GET all comments attached to post
 exports.comments_on_post_get = async (req, res, next) => {
   const { postId } = req.params;
 
@@ -222,7 +222,7 @@ exports.comments_on_post_get = async (req, res, next) => {
   }
 };
 
-// Comment on post
+// CREATE comment on post
 exports.create_comment_on_post = [
   // Authenticate user
   passport.authenticate("jwt", { session: false }),
