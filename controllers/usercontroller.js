@@ -25,7 +25,7 @@ const checkAuth = (userId, params, res) => {
   return true;
 };
 
-// Return all users
+// GET all users, only by author
 exports.users_get = async (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ msg: "You must be logged in to view users" });
@@ -53,25 +53,7 @@ exports.users_get = async (req, res, next) => {
   });
 };
 
-// Get own user info
-exports.user_get = async (req, res, next) => {
-  const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
-  if (isAuthorized) {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.id },
-        include: { posts: { select: { id: true, title: true } } },
-      });
-      return res.json(user);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  return;
-};
-
-// Create user
+// CREATE user
 exports.user_create_post = [
   // Validate user submission
   body("username")
@@ -86,7 +68,6 @@ exports.user_create_post = [
         where: { username: value },
       });
       if (user) {
-        console.log(user);
         throw new Error("Username already exists");
       }
     } catch (err) {
@@ -107,7 +88,7 @@ exports.user_create_post = [
       return res.json({ msg: errors.map((error) => error.msg) });
     }
 
-    // Encryp password
+    // Encrypt password
     bcrypt.hash(password, 10, async (err, hashedPassword) => {
       if (err) return next(err);
 
@@ -124,10 +105,26 @@ exports.user_create_post = [
   },
 ];
 
-// Delete user
-exports.delete_user = [
-  passport.authenticate("jwt", { session: false }),
+// GET own user info
+exports.user_get = async (req, res, next) => {
+  const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
+  if (isAuthorized) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: { posts: { select: { id: true, title: true } } },
+      });
+      return res.json(user);
+    } catch (err) {
+      next(err);
+    }
+  }
 
+  return;
+};
+
+// DELETE user
+exports.delete_user = [
   async (req, res, next) => {
     const { userId } = req.params;
     if (req.user.role === "AUTHOR" || req.user.id === req.params.userId) {
@@ -156,7 +153,72 @@ exports.delete_user = [
   },
 ];
 
-// Get all posts of a user
+// UPDATE user
+exports.update_user_put = [
+  // Check if user can change data
+  (req, res, next) => {
+    const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
+    if (isAuthorized) {
+      next();
+    }
+
+    return;
+  },
+  body("username")
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage("Username cannot be empty"),
+  // Check if user already exists
+  body("username").custom(async (value, { req }) => {
+    // Return if username unchanged
+    if (value == req.user.username) {
+      return;
+    }
+
+    // Check if new username already in use
+    try {
+      const user = await prisma.user.findUnique({
+        where: { username: value },
+      });
+      if (user) {
+        throw new Error("Username already exists");
+      }
+    } catch (err) {
+      throw err;
+    }
+  }),
+  body("password")
+    .trim()
+    .isLength({ min: 4 })
+    .withMessage("Password mnust be at least 4 characters long"),
+  async (req, res, next) => {
+    const { errors } = validationResult(req);
+    const { username, name, password } = req.body;
+
+    if (errors.length > 0) {
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
+    }
+
+    // Update user in db
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          username,
+          password,
+          name,
+        },
+      });
+
+      return res.json(updatedUser);
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
+// GET all posts of a user
 exports.user_posts_get = async (req, res, next) => {
   const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
   if (isAuthorized) {
@@ -173,7 +235,7 @@ exports.user_posts_get = async (req, res, next) => {
   return;
 };
 
-// Get all comments of a user
+// GET all comments of a user
 exports.user_comments_get = async (req, res, next) => {
   const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
   if (isAuthorized) {
