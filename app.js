@@ -23,12 +23,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use("/auth", authRouter);
 app.use(
   "/users",
   passport.authenticate("jwt", { session: false }),
   usersRouter
 );
-app.use("/auth", authRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 
