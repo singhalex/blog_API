@@ -12,8 +12,7 @@ exports.login_post = (req, res, next) => {
     }
 
     if (!user) {
-      console.log(info.msg);
-      return res.status(401).json(user);
+      return res.status(401).json(info);
     }
     return res.json(createJWT(user));
   })(req, res, next);
