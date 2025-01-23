@@ -183,7 +183,7 @@ exports.delete_post_post = [
           where: { id: parseInt(postId) },
         });
 
-        return res.json({ deletedPost, msg: "Post deleted" });
+        return res.json({ ...deletedPost, msg: "Post deleted" });
       } else {
         return res
           .status(401)
