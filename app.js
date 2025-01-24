@@ -10,6 +10,7 @@ const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
 const postRouter = require("./routes/posts");
 const commentRouter = require("./routes/comments");
+const adminRouter = require("./routes/admin");
 
 const app = express();
 
@@ -26,26 +27,22 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/auth", authRouter);
 app.use(
   "/users",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false, failWithError: true }),
   usersRouter
 );
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
+app.use("/admin", adminRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
+  res.status(404);
   next(createError(404));
 });
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+  res.json(err);
 });
 
 module.exports = app;
