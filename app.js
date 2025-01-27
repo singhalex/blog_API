@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/auth", authRouter);
 app.use(
   "/users",
-  passport.authenticate("jwt", { session: false, failWithError: true }),
+  // passport.authenticate("jwt", { session: false, failWithError: true }),
   usersRouter
 );
 app.use("/posts", postRouter);
