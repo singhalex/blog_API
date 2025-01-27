@@ -1,9 +1,5 @@
 const passport = require("../utils/passport");
-const jwt = require("jsonwebtoken");
-
-const createJWT = (user) => {
-  return jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET);
-};
+const createJWT = require("../utils/createJWT");
 
 exports.login_post = (req, res, next) => {
   passport.authenticate("local", function (err, user, info) {
@@ -14,6 +10,6 @@ exports.login_post = (req, res, next) => {
     if (!user) {
       return res.status(401).json(info);
     }
-    return res.json(createJWT(user));
+    return res.json({ jst: createJWT(user) });
   })(req, res, next);
 };
