@@ -4,7 +4,7 @@ const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const createJWT = require("../utils/createJWT");
 
-exports.create_admin_post = [
+exports.create_admin = [
   // Validate user submission
   body("username")
     .trim()
