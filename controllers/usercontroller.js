@@ -3,11 +3,7 @@ const passport = require("passport");
 const prisma = new PrismaClient({ omit: { user: { password: true } } });
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
-
-const jwt = require("jsonwebtoken");
-const createJWT = (user) => {
-  return jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET);
-};
+const createJWT = require("../utils/createJWT");
 
 const checkAuth = (userId, params, res) => {
   if (!userId) {
@@ -97,7 +93,7 @@ exports.user_create_post = [
         const user = await prisma.user.create({
           data: { username, password: hashedPassword, name },
         });
-        return res.json(createJWT(user));
+        return res.json({ jwt: createJWT(user) });
       } catch (err) {
         next(err);
       }
