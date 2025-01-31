@@ -3,6 +3,9 @@ const prisma = new PrismaClient();
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const createJWT = require("../utils/createJWT");
+const passport = require("passport");
+
+const opts = { session: false, failWithError: true };
 
 exports.create_admin = [
   // Validate user submission
@@ -58,5 +61,36 @@ exports.create_admin = [
         next(err);
       }
     });
+  },
+];
+
+exports.users_get = [
+  // Authenticate user
+  passport.authenticate("jwt", opts),
+  // Check if user has rights to view users
+  async (req, res, next) => {
+    if (!req.user || req.user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You are not authorized to view this data" });
+    }
+
+    if (req.user.role === "AUTHOR") {
+      try {
+        const users = await prisma.user.findMany({
+          include: {
+            _count: {
+              select: {
+                posts: true,
+                comments: true,
+              },
+            },
+          },
+        });
+        return res.json({ users });
+      } catch (err) {
+        next(err);
+      }
+    }
   },
 ];
