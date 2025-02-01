@@ -10,8 +10,33 @@ router.post("/", adminController.create_admin);
 router.get("/users", adminController.users_get);
 
 // DELETE user
-router.delete("/:userId", (req, res) => {
+router.delete("users/:userId", (req, res) => {
   res.send("USER DELETED");
+});
+
+// GET all posts
+router.get("/posts", (req, res, next) => {
+  res.send("ALL POSTS");
+});
+
+// GET unpublished posts
+router.get("/posts", (req, res) => {
+  res.send("UNPUBLISHED POSTS");
+});
+
+// POST post
+router.post("/posts", (req, res) => {
+  res.send("POST PUBLISHED");
+});
+
+//UPDATE post
+router.put("/posts/:postId", (req, res) => {
+  res.send("POST UPDATED");
+});
+
+// DELETE post
+router.delete("/posts/:postId", (req, res) => {
+  res.send("POST DELETED");
 });
 
 module.exports = router;
