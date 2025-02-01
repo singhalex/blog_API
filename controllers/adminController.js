@@ -96,16 +96,19 @@ exports.users_get = [
 ];
 
 exports.user_delete = [
+  // Authenticate user
   passport.authenticate("jwt", opts),
   async (req, res, next) => {
     const user = req.user;
     const userId = req.params.userId;
+    // Check for user rights
     if (!user || user.role !== "AUTHOR") {
       return res
         .status(401)
         .json({ msg: "You are not authorized to delete this user" });
     }
     try {
+      // Check if user exists
       const user = await prisma.user.findUnique({
         where: { id: userId },
       });
@@ -114,6 +117,7 @@ exports.user_delete = [
         return res.status(404).json({ msg: "User not found" });
       }
 
+      // Delete user from db
       const deletedUser = await prisma.user.delete({ where: { id: userId } });
       return res.json({ deletedUser });
     } catch (err) {
