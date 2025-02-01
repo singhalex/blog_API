@@ -10,9 +10,7 @@ router.post("/", adminController.create_admin);
 router.get("/users", adminController.users_get);
 
 // DELETE user
-router.delete("users/:userId", (req, res) => {
-  res.send("USER DELETED");
-});
+router.delete("/users/:userId", adminController.users_delete);
 
 // GET all posts
 router.get("/posts", adminController.posts_get);
