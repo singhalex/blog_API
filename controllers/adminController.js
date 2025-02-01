@@ -94,3 +94,30 @@ exports.users_get = [
     }
   },
 ];
+
+exports.user_delete = [
+  passport.authenticate("jwt", opts),
+  async (req, res, next) => {
+    const user = req.user;
+    const userId = req.params.userId;
+    if (!user || user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You are not authorized to delete this user" });
+    }
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({ msg: "User not found" });
+      }
+
+      const deletedUser = await prisma.user.delete({ where: { id: userId } });
+      return res.json({ deletedUser });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
