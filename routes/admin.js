@@ -15,14 +15,7 @@ router.delete("users/:userId", (req, res) => {
 });
 
 // GET all posts
-router.get("/posts", (req, res, next) => {
-  res.send("ALL POSTS");
-});
-
-// GET unpublished posts
-router.get("/posts", (req, res) => {
-  res.send("UNPUBLISHED POSTS");
-});
+router.get("/posts", adminController.posts_get);
 
 // POST post
 router.post("/posts", (req, res) => {
@@ -37,6 +30,11 @@ router.put("/posts/:postId", (req, res) => {
 // DELETE post
 router.delete("/posts/:postId", (req, res) => {
   res.send("POST DELETED");
+});
+
+// GET unpublished posts
+router.get("/posts/unpublished", (req, res) => {
+  res.send("UNPUBLISHED POSTS");
 });
 
 module.exports = router;

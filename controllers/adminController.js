@@ -95,7 +95,7 @@ exports.users_get = [
   },
 ];
 
-exports.user_delete = [
+exports.users_delete = [
   // Authenticate user
   passport.authenticate("jwt", opts),
   async (req, res, next) => {
@@ -120,6 +120,35 @@ exports.user_delete = [
       // Delete user from db
       const deletedUser = await prisma.user.delete({ where: { id: userId } });
       return res.json({ deletedUser });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
+exports.posts_get = [
+  // Authenticate user
+  passport.authenticate("jwt", opts),
+
+  async (req, res, next) => {
+    const user = req.user;
+    // Check if user has rights
+    if (!user || user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You do not have the rights to view these posts" });
+    }
+
+    try {
+      // Return all posts
+      const posts = await prisma.post.findMany({
+        orderBy: { updatedAt: "desc" },
+        include: {
+          _count: { select: { comments: true } },
+          author: { select: { name: true } },
+        },
+      });
+      return res.json({ posts });
     } catch (err) {
       next(err);
     }
