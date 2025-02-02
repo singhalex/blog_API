@@ -154,3 +154,49 @@ exports.posts_get = [
     }
   },
 ];
+
+exports.create_post = [
+  passport.authenticate("jwt", opts),
+  // Validate and sanitize user submission
+  body("title")
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage("Title cannot be empty"),
+  body("content").trim().escape(),
+  body("published").customSanitizer((value) => {
+    return value === "true" ? true : false;
+  }),
+  async (req, res, next) => {
+    const user = req.user;
+
+    if (!user || user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You do not have rights to create a post" });
+    }
+
+    const { title, content, published } = req.body;
+    const { errors } = validationResult(req);
+
+    // Check for errors
+    if (errors.length > 0) {
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
+    }
+
+    // Save post to db
+    try {
+      const post = await prisma.post.create({
+        data: {
+          title,
+          content,
+          published,
+          authorId: user.id,
+        },
+      });
+      return res.status(201).json({ post });
+    } catch (err) {
+      next(err);
+    }
+  },
+];

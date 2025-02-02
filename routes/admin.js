@@ -15,10 +15,8 @@ router.delete("/users/:userId", adminController.users_delete);
 // GET all posts
 router.get("/posts", adminController.posts_get);
 
-// POST post
-router.post("/posts", (req, res) => {
-  res.send("POST PUBLISHED");
-});
+// POST create post
+router.post("/posts", adminController.create_post);
 
 //UPDATE post
 router.put("/posts/:postId", (req, res) => {
