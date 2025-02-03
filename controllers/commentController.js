@@ -4,6 +4,8 @@ const passport = require("../utils/passport");
 const { body, validationResult } = require("express-validator");
 const containtsNonNumber = require("../utils/containsNonNumber");
 
+const opts = { session: false, failWithError: true };
+
 // Get all comments
 exports.comments_get = async (req, res, next) => {
   try {
@@ -42,7 +44,7 @@ exports.single_comment_get = async (req, res, next) => {
 
 // Delete comment
 exports.delete_comment_post = [
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", opts),
   async (req, res, next) => {
     const { commentId } = req.params;
 
@@ -72,7 +74,7 @@ exports.delete_comment_post = [
         where: { id: comment.id },
       });
 
-      return res.json(deletedComment);
+      return res.json({ ...deletedComment, msg: "Comment deleted" });
     } catch (err) {
       next(err);
     }
@@ -81,7 +83,7 @@ exports.delete_comment_post = [
 
 exports.edit_comment_post = [
   // Authenticate user
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", opts),
   // Validate and sanitize user submission
   body("content")
     .trim()
@@ -120,7 +122,7 @@ exports.edit_comment_post = [
         data: { content: req.body.content },
       });
 
-      return res.json(updatedComment);
+      return res.json({ ...updatedComment, msg: "Comment updated" });
     } catch (err) {
       next(err);
     }
