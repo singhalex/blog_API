@@ -8,20 +8,17 @@ const opts = {
   failWithError: true,
 };
 
-// GET users list
-router.get("/", passport.authenticate("jwt", opts), userController.users_get);
-
 // CREATE user
 router.post("/", userController.user_create_post);
 
-// GET single user
+// GET user self
 router.get(
   "/:userId",
   passport.authenticate("jwt", opts),
   userController.user_get
 );
 
-// DELETE user
+// DELETE user self
 router.delete(
   "/:userId",
   passport.authenticate("jwt", opts),

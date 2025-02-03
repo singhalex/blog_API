@@ -21,34 +21,6 @@ const checkAuth = (userId, params, res) => {
   return true;
 };
 
-// GET all users, only by author
-exports.users_get = async (req, res, next) => {
-  if (!req.user) {
-    return res.status(401).json({ msg: "You must be logged in to view users" });
-  }
-  if (req.user.role === "AUTHOR") {
-    try {
-      const users = await prisma.user.findMany({
-        include: {
-          _count: {
-            select: {
-              posts: true,
-              comments: true,
-            },
-          },
-        },
-      });
-      return res.json(users);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  return res.status(402).json({
-    msg: "You are not authorized to view users",
-  });
-};
-
 // CREATE user
 exports.user_create_post = [
   // Validate user submission
@@ -104,19 +76,23 @@ exports.user_create_post = [
 // GET own user info
 exports.user_get = async (req, res, next) => {
   const isAuthorized = checkAuth(req.user.id, req.params.userId, res);
-  if (isAuthorized) {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.id },
-        include: { posts: { select: { id: true, title: true } } },
-      });
-      return res.json(user);
-    } catch (err) {
-      next(err);
-    }
+  if (!isAuthorized) {
+    return;
   }
 
-  return;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { posts: { select: { id: true, title: true } } },
+    });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    return res.json(user);
+  } catch (err) {
+    next(err);
+  }
 };
 
 // DELETE user
@@ -138,11 +114,12 @@ exports.delete_user = [
           where: { id: userId },
         });
 
-        return res.json(deletedUser);
+        return res.json({ ...deletedUser, msg: "User deleted" });
       } catch (err) {
         next(err);
       }
     }
+
     return res
       .status(401)
       .json({ msg: "You are not authorized to delete this user" });
@@ -207,7 +184,7 @@ exports.update_user_put = [
         },
       });
 
-      return res.json(updatedUser);
+      return res.json({ ...updatedUser, msg: "User info updated" });
     } catch (err) {
       next(err);
     }
@@ -222,7 +199,7 @@ exports.user_posts_get = async (req, res, next) => {
       const posts = await prisma.post.findMany({
         where: { authorId: req.user.id },
       });
-      return res.json(posts);
+      return res.json({ posts });
     } catch (err) {
       next(err);
     }
@@ -239,7 +216,7 @@ exports.user_comments_get = async (req, res, next) => {
       const comments = await prisma.comment.findMany({
         where: { authorId: req.user.id },
       });
-      return res.json(comments);
+      return res.json({ comments });
     } catch (err) {
       next(err);
     }
