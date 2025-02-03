@@ -16,17 +16,15 @@ router.delete("/users/:userId", adminController.users_delete);
 router.get("/posts", adminController.posts_get);
 
 // POST create post
-router.post("/posts", adminController.posts_create);
+router.post("/posts", adminController.post_create);
 
 //UPDATE post
 router.put("/posts/:postId", (req, res) => {
-  res.send("POST UPDATED");
+  return res.send("POST UPDATED");
 });
 
 // DELETE post
-router.delete("/posts/:postId", (req, res) => {
-  res.send("POST DELETED");
-});
+router.delete("/posts/:postId", adminController.post_delete);
 
 // GET unpublished posts
 router.get("/posts/unpublished", (req, res) => {

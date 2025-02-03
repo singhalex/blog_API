@@ -4,6 +4,7 @@ const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const createJWT = require("../utils/createJWT");
 const passport = require("passport");
+const containsNonNumber = require("../utils/containsNonNumber");
 
 const opts = { session: false, failWithError: true };
 
@@ -159,7 +160,7 @@ exports.posts_get = [
   },
 ];
 
-exports.posts_create = [
+exports.post_create = [
   passport.authenticate("jwt", opts),
   // Validate and sanitize user submission
   body("title")
@@ -199,6 +200,49 @@ exports.posts_create = [
         },
       });
       return res.status(201).json({ post });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
+exports.post_delete = [
+  passport.authenticate("jwt", opts),
+  async (req, res, next) => {
+    const user = req.user;
+    const { postId } = req.params;
+
+    if (!user || user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You do not have rights to create a post" });
+    }
+
+    if (containsNonNumber(postId)) {
+      return res.status(404).json({ msg: "Invalid post ID" });
+    }
+
+    try {
+      // Retrieve post
+      const post = await prisma.post.findUnique({
+        where: { id: parseInt(postId) },
+      });
+
+      if (!post) {
+        return res.status(404).json({ msg: "Post not found" });
+      }
+
+      if (post.authorId !== user.id) {
+        return res
+          .status(401)
+          .json({ msg: "Can't delete other author's post" });
+      }
+
+      // Delete post from db
+      const deletedPost = await prisma.post.delete({
+        where: { id: parseInt(postId) },
+      });
+      return res.json({ ...deletedPost, msg: "Post deleted" });
     } catch (err) {
       next(err);
     }
