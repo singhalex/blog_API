@@ -64,6 +64,8 @@ exports.create_admin = [
   },
 ];
 
+/*<-- USERS -->*/
+
 exports.users_get = [
   // Authenticate user
   passport.authenticate("jwt", opts),
@@ -126,6 +128,8 @@ exports.users_delete = [
   },
 ];
 
+/*<-- POSTS -->*/
+
 exports.posts_get = [
   // Authenticate user
   passport.authenticate("jwt", opts),
@@ -155,7 +159,7 @@ exports.posts_get = [
   },
 ];
 
-exports.create_post = [
+exports.posts_create = [
   passport.authenticate("jwt", opts),
   // Validate and sanitize user submission
   body("title")
@@ -200,3 +204,5 @@ exports.create_post = [
     }
   },
 ];
+
+/*<-- COMMENTS -->*/

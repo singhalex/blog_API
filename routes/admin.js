@@ -16,7 +16,7 @@ router.delete("/users/:userId", adminController.users_delete);
 router.get("/posts", adminController.posts_get);
 
 // POST create post
-router.post("/posts", adminController.create_post);
+router.post("/posts", adminController.posts_create);
 
 //UPDATE post
 router.put("/posts/:postId", (req, res) => {
