@@ -308,4 +308,29 @@ exports.post_update = [
     }
   },
 ];
+
+exports.posts_unpublished_get = [
+  passport.authenticate("jwt", opts),
+  async (req, res, next) => {
+    const user = req.user;
+
+    if (!user || user.role !== "AUTHOR") {
+      res
+        .status(401)
+        .json({ msg: "You are not authorized to view these posts" });
+    }
+
+    try {
+      const unpublishedPosts = await prisma.post.findMany({
+        where: { published: false },
+        orderBy: { updatedAt: "desc" },
+      });
+
+      return res.json({ unpublishedPosts });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
 /*<-- COMMENTS -->*/

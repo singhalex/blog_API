@@ -3,6 +3,8 @@ const router = express.Router();
 
 const adminController = require("../controllers/adminController");
 
+/*<-- USERS -->*/
+
 // CREATE admin user
 router.post("/", adminController.create_admin);
 
@@ -11,6 +13,8 @@ router.get("/users", adminController.users_get);
 
 // DELETE user
 router.delete("/users/:userId", adminController.users_delete);
+
+/*<-- POSTS -->*/
 
 // GET all posts
 router.get("/posts", adminController.posts_get);
@@ -25,8 +29,8 @@ router.put("/posts/:postId", adminController.post_update);
 router.delete("/posts/:postId", adminController.post_delete);
 
 // GET unpublished posts
-router.get("/posts/unpublished", (req, res) => {
-  res.send("UNPUBLISHED POSTS");
-});
+router.get("/posts/unpublished", adminController.posts_unpublished_get);
+
+/*<-- Comments -->*/
 
 module.exports = router;
