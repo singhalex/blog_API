@@ -249,4 +249,63 @@ exports.post_delete = [
   },
 ];
 
+exports.post_update = [
+  passport.authenticate("jwt", opts),
+  // Validate and sanitze user inputs
+  body("title")
+    .trim()
+    .escape()
+    .isLength({ min: 1 })
+    .withMessage("Title cannot be empty"),
+  body("content").trim().escape(),
+  body("published").customSanitizer((value) => {
+    return value === "true" ? true : false;
+  }),
+  async (req, res, next) => {
+    const { postId } = req.params;
+    const { title, content, published } = req.body;
+    const { errors } = validationResult(req);
+    const { user } = req;
+
+    if (!user || user.role !== "AUTHOR") {
+      return res
+        .status(401)
+        .json({ msg: "You do not have rights to create a post" });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ msg: errors.map((error) => error.msg) });
+    }
+
+    if (containsNonNumber(postId)) {
+      return res.status(400).json({ msg: "Invalid post ID" });
+    }
+
+    try {
+      // Lookup post in db
+      const post = await prisma.post.findUnique({
+        where: { id: parseInt(postId) },
+      });
+
+      if (!post) {
+        return res.status(404).json({ msg: "Post not found" });
+      }
+
+      if (post.authorId !== user.id) {
+        return res
+          .status(401)
+          .json({ msg: "You cannot edit other author's posts" });
+      }
+
+      const updatedPost = await prisma.post.update({
+        where: { id: post.id },
+        data: { title, content, published },
+      });
+
+      return res.json({ ...updatedPost, msg: "Post updated" });
+    } catch (err) {
+      next(err);
+    }
+  },
+];
 /*<-- COMMENTS -->*/

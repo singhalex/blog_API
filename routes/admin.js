@@ -19,9 +19,7 @@ router.get("/posts", adminController.posts_get);
 router.post("/posts", adminController.post_create);
 
 //UPDATE post
-router.put("/posts/:postId", (req, res) => {
-  return res.send("POST UPDATED");
-});
+router.put("/posts/:postId", adminController.post_update);
 
 // DELETE post
 router.delete("/posts/:postId", adminController.post_delete);
