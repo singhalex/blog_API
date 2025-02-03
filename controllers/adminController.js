@@ -57,7 +57,7 @@ exports.create_admin = [
           data: { name, password: hashedPassword, username, role: "AUTHOR" },
         });
 
-        return res.json({ jwt: createJWT(user) });
+        return res.json({ jwt: createJWT(user), msg: "Admin user created" });
       } catch (err) {
         next(err);
       }
@@ -122,7 +122,7 @@ exports.users_delete = [
 
       // Delete user from db
       const deletedUser = await prisma.user.delete({ where: { id: userId } });
-      return res.json({ deletedUser });
+      return res.json({ ...deletedUser, msg: "User deleted" });
     } catch (err) {
       next(err);
     }
@@ -199,7 +199,7 @@ exports.post_create = [
           authorId: user.id,
         },
       });
-      return res.status(201).json({ post });
+      return res.status(201).json({ ...post, msg: "Post created" });
     } catch (err) {
       next(err);
     }
