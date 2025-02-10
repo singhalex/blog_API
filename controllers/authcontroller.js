@@ -13,3 +13,13 @@ exports.login_post = (req, res, next) => {
     return res.json({ jst: createJWT(user) });
   })(req, res, next);
 };
+
+exports.check_jwt = [
+  passport.authenticate("jwt", {
+    session: false,
+    failWithError: true,
+  }),
+  (req, res) => {
+    res.json({ user: req.user });
+  },
+];

@@ -48,6 +48,7 @@ passport.use(
         // retrieve user from db
         const user = await prisma.user.findUnique({
           where: { id: jwtPayload.id },
+          omit: { password: true },
         });
         if (user) {
           return done(null, user);
